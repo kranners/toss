@@ -1,4 +1,4 @@
-import type { Position } from "../types";
+import type { Vector } from "../types";
 
 export function getCanvas() {
   const canvas = document.querySelector("canvas");
@@ -12,33 +12,34 @@ export function getCanvas() {
 
 export function getContext() {
   const canvas = getCanvas();
-  const context = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d");
 
-  if (!context) {
+  if (!ctx) {
     throw new Error("Could not get canvas context!");
   }
 
-  return context;
+  ctx.font = "8px sans-serif";
+  return ctx;
 }
 
 export function withContext(draw: (context: CanvasRenderingContext2D) => void) {
-  const context = getContext();
-  context.beginPath();
-  draw(context);
-  context.closePath();
-  context.stroke();
+  const ctx = getContext();
+  ctx.beginPath();
+  draw(ctx);
+  ctx.closePath();
+  ctx.stroke();
 }
 
 export function clearCanvas() {
   getContext().reset();
 }
 
-export const mouse: Position = {
+export const mouse: Vector = {
   x: 0,
   y: 0,
 };
 
-export function listenToMousePosition() {
+export function listenToMouseVector() {
   const bounding = getCanvas().getBoundingClientRect();
   getCanvas().addEventListener("mousemove", (event) => {
     mouse.x = event.clientX - bounding.left;
