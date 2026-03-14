@@ -1,83 +1,70 @@
 import { clearCanvas, getCanvas, listenToMouseVector, mouse } from "./canvas";
-import { drawArrow, drawCircle } from "./draw";
+import { drawCircle } from "./draw";
 import {
-  add,
-  getDistanceOfLine,
-  getRotationOfLine,
-  getVectorFromPolar,
-} from "./math";
+  ball,
+  BALL_RADIUS,
+  INITIAL_BALL,
+  renderGameElements,
+  resetBall,
+} from "./elements";
+import { getDistanceOfLine, getVectorFromPolar } from "./math";
+import type { State } from "./types";
+import { renderUi } from "./ui";
 
 const FORCE_MULTIPLIER = 1_000_000;
 const MILLIS_PER_SIXTIETH_SECOND = 1_000 / 60;
 
-const INITIAL_SHAPE = {
-  x: 50,
-  y: 50,
-  radius: 50,
-};
-
-const ARROW_FROM = {
-  x: 50,
-  y: 300,
-};
+export let state: State = "throwing";
 
 async function main() {
-  const RAPIER = await import("@dimforge/rapier2d");
-  const world = new RAPIER.World({ x: 0.0, y: 98.1 });
+  const rapier = await import("@dimforge/rapier2d");
+  const world = new rapier.World({ x: 0.0, y: 98.1 });
 
-  const rigidBodyDesc = RAPIER.RigidBodyDesc.dynamic().setTranslation(
-    INITIAL_SHAPE.x,
-    INITIAL_SHAPE.y,
-  );
-
-  const rigidBody = world.createRigidBody(rigidBodyDesc);
-
-  const colliderDesc = RAPIER.ColliderDesc.cuboid(
-    INITIAL_SHAPE.radius / 2,
-    INITIAL_SHAPE.radius / 2,
-  );
-
-  world.createCollider(colliderDesc, rigidBody);
+  resetBall({ rapier, world });
 
   getCanvas().addEventListener("mousedown", (event) => {
+    if (!ball.rigidBody || state !== "throwing") {
+      return;
+    }
+
     const launchRotationRadians = Math.atan2(
-      event.clientY - rigidBody.translation().y,
-      event.clientX - rigidBody.translation().x,
+      event.clientY - ball.rigidBody.translation().y,
+      event.clientX - ball.rigidBody.translation().x,
     );
 
-    const launchForceX = FORCE_MULTIPLIER * Math.cos(launchRotationRadians);
-    const launchForceY = FORCE_MULTIPLIER * Math.sin(launchRotationRadians);
+    const distanceToMouse = Math.min(
+      getDistanceOfLine({ from: INITIAL_BALL, to: mouse }),
+      300,
+    );
 
-    rigidBody.applyImpulse({ x: launchForceX, y: launchForceY }, true);
-    rigidBody.applyTorqueImpulse(launchForceX * 2, true);
+    const launch = getVectorFromPolar({
+      rotation: launchRotationRadians,
+      radius: (FORCE_MULTIPLIER * distanceToMouse) / 100,
+    });
+
+    ball.rigidBody.applyImpulse(launch, true);
+    ball.rigidBody.applyTorqueImpulse(launch.x * 2, true);
+
+    state = "falling";
   });
 
   listenToMouseVector();
 
   setInterval(() => {
+    clearCanvas();
+    renderUi();
+    renderGameElements();
+
+    if (state !== "falling" || !ball.rigidBody) {
+      return;
+    }
+
     world.step();
 
-    clearCanvas();
-
-    const arrowRotation = getRotationOfLine({ from: ARROW_FROM, to: mouse });
-    const arrowRadius = Math.min(
-      getDistanceOfLine({ from: ARROW_FROM, to: mouse }),
-      300,
-    );
-    const arrowVector = getVectorFromPolar({
-      rotation: arrowRotation,
-      radius: arrowRadius,
-    });
-    drawArrow({
-      from: ARROW_FROM,
-      to: add(ARROW_FROM, arrowVector),
-    });
-
-    drawCircle({
-      ...rigidBody.translation(),
-      radius: INITIAL_SHAPE.radius,
-      rotation: rigidBody.rotation(),
-    });
+    if (ball.rigidBody.translation().y > 650) {
+      resetBall({ rapier, world });
+      state = "throwing";
+    }
   }, MILLIS_PER_SIXTIETH_SECOND);
 }
 

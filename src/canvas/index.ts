@@ -35,8 +35,8 @@ export function clearCanvas() {
 }
 
 export const mouse: Vector = {
-  x: 0,
-  y: 0,
+  x: 300,
+  y: 300,
 };
 
 export function listenToMouseVector() {

@@ -15,4 +15,4 @@ export type Line = {
 
 export type Circle = Vector & PolarVector;
 
-type State = "throwing" | "falling";
+export type State = "throwing" | "falling";
