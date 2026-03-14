@@ -3,6 +3,11 @@ export type Position = {
   y: number;
 };
 
+export type Line = {
+  from: Position;
+  to: Position;
+};
+
 export type Circle = Position & {
   rotation: number;
   radius: number;

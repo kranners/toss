@@ -1,3 +1,5 @@
+import type { Position } from "../types";
+
 export function getCanvas() {
   const canvas = document.querySelector("canvas");
 
@@ -19,6 +21,27 @@ export function getContext() {
   return context;
 }
 
+export function withContext(draw: (context: CanvasRenderingContext2D) => void) {
+  const context = getContext();
+  context.beginPath();
+  draw(context);
+  context.closePath();
+  context.stroke();
+}
+
 export function clearCanvas() {
   getContext().reset();
+}
+
+export const mouse: Position = {
+  x: 0,
+  y: 0,
+};
+
+export function listenToMousePosition() {
+  const bounding = getCanvas().getBoundingClientRect();
+  getCanvas().addEventListener("mousemove", (event) => {
+    mouse.x = event.clientX - bounding.left;
+    mouse.y = event.clientY - bounding.top;
+  });
 }
