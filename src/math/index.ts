@@ -17,3 +17,7 @@ export function add(v1: Vector, v2: Vector) {
     y: v1.y + v2.y,
   };
 }
+
+export function getDistanceOfLine({ from, to }: Line) {
+  return Math.sqrt(Math.pow(to.x - from.x, 2) + Math.pow(to.y - from.y, 2));
+}

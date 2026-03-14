@@ -13,14 +13,14 @@ export function drawCircle({ x, y, radius, rotation }: Circle) {
   });
 }
 
-const ARROW_CAP_ANGLE = Math.PI * 0.05;
-
 export function drawLine({ from, to }: Line) {
   withContext((ctx) => {
     ctx.moveTo(from.x, from.y);
     ctx.lineTo(to.x, to.y);
   });
 }
+
+const ARROW_CAP_ANGLE = Math.PI * 0.05;
 
 export function drawArrow({ from, to: head }: Line) {
   const angle = getRotationOfLine({ from, to: head });

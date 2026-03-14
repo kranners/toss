@@ -1,6 +1,11 @@
 import { clearCanvas, getCanvas, listenToMouseVector, mouse } from "./canvas";
 import { drawArrow, drawCircle } from "./draw";
-import { add, getRotationOfLine, getVectorFromPolar } from "./math";
+import {
+  add,
+  getDistanceOfLine,
+  getRotationOfLine,
+  getVectorFromPolar,
+} from "./math";
 
 const FORCE_MULTIPLIER = 1_000_000;
 const MILLIS_PER_SIXTIETH_SECOND = 1_000 / 60;
@@ -55,9 +60,13 @@ async function main() {
     clearCanvas();
 
     const arrowRotation = getRotationOfLine({ from: ARROW_FROM, to: mouse });
+    const arrowRadius = Math.min(
+      getDistanceOfLine({ from: ARROW_FROM, to: mouse }),
+      300,
+    );
     const arrowVector = getVectorFromPolar({
       rotation: arrowRotation,
-      radius: 150,
+      radius: arrowRadius,
     });
     drawArrow({
       from: ARROW_FROM,
